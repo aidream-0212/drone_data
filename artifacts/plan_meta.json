@@ -1,0 +1,13 @@
+{
+  "data": {
+    "train": "26c4d3711fd5",
+    "test": "5fa789dd8111",
+    "this_month": "379631f03af5"
+  },
+  "model": "fa51be49c230",
+  "score": "beb6fc3e9cf1",
+  "threshold": 0.22,
+  "records": 106,
+  "drones": 81,
+  "over_threshold": 33
+}

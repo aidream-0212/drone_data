@@ -1,0 +1,111 @@
+{
+  "model": "LightGBM + 원-핫 (drone_lib.make_model)",
+  "target": "정비 뒤 30일 안 재고장(사후 · 긴급정비) 여부",
+  "split": {
+    "fit": "~ 2024-06-30 (1,703건)",
+    "val": "2024-07-01 ~ 2024-12-31 (643건)",
+    "final_train": "2023-01-01 ~ 2024-12-31 (2,346건)",
+    "test": "2025 (1,241건, 정답 없음)"
+  },
+  "features": [
+    "equipment_type",
+    "maintenance_type",
+    "fault_category",
+    "season",
+    "equipment_age_years",
+    "severity",
+    "downtime_hours",
+    "repair_duration_hours",
+    "parts_replaced_count",
+    "maintenance_cost",
+    "maintenance_success",
+    "cumulative_operating_hours",
+    "days_since_last_maintenance",
+    "is_first_maintenance",
+    "fail_count_90d",
+    "days_since_last_failure",
+    "hours_since_last_pm"
+  ],
+  "excluded": {
+    "availability_rate": "그 달 전체 가동률 — 정비 직후에는 알 수 없음(누수), 이번 달 데이터에도 없음",
+    "equipment_id": "식별자 — 드론 번호를 외우게 됨",
+    "unit_code": "식별자(부대) — 부대 번호를 외우게 됨",
+    "maintenance_date": "날짜 자체는 넣지 않음 — 계절(season)과 시간 피처로 대신함",
+    "fault_code": "고장 코드는 세부 코드라 종류가 많음 — fault_category로 대신함"
+  },
+  "validation": {
+    "pr_auc": 0.776,
+    "roc_auc": 0.879,
+    "base_rate": 0.274,
+    "n": 643,
+    "positives": 176,
+    "top20_hits_6m": {
+      "model": 96.0,
+      "oldest": 50.0,
+      "random": 32.5
+    }
+  },
+  "threshold": 0.22,
+  "threshold_rule": "검증 기간 비용 최소: 놓친 재고장 300만원 × 건수 + 재점검 60만원 × 기준 이상 건수",
+  "threshold_by_miss_cost": {
+    "150": {
+      "threshold": 0.35,
+      "flagged": 187,
+      "missed": 46,
+      "cost": 18120
+    },
+    "300": {
+      "threshold": 0.22,
+      "flagged": 245,
+      "missed": 28,
+      "cost": 23100
+    },
+    "600": {
+      "threshold": 0.12,
+      "flagged": 309,
+      "missed": 20,
+      "cost": 30540
+    }
+  },
+  "capacity_per_month": 20,
+  "importance_gain": {
+    "days_since_last_failure": 0.374,
+    "fail_count_90d": 0.347,
+    "days_since_last_maintenance": 0.064,
+    "cumulative_operating_hours": 0.041,
+    "hours_since_last_pm": 0.031,
+    "maintenance_success": 0.031,
+    "downtime_hours": 0.025,
+    "equipment_type": 0.022,
+    "maintenance_cost": 0.015,
+    "repair_duration_hours": 0.014,
+    "equipment_age_years": 0.012,
+    "fault_category": 0.007,
+    "parts_replaced_count": 0.007,
+    "season": 0.007,
+    "maintenance_type": 0.002,
+    "is_first_maintenance": 0.0,
+    "severity": 0.0
+  },
+  "submission": {
+    "path": "outputs/test_predictions_2025.csv",
+    "rows": 1241,
+    "prob_mean": 0.262,
+    "flag_ge_threshold": 451
+  },
+  "limits": [
+    "교육용 가상 데이터로 학습했다. 실제 드론 운용에 그대로 쓰지 않는다.",
+    "학습 기간(2023 ~ 2024)보다 재고장 비율이 오르는 추세여서, 확률 · 기준이 뒤 기간에 낮게 맞을 수 있다.",
+    "확률은 '정비 뒤 30일' 기준이다. 정비 기록이 없는 드론은 판단하지 않는다.",
+    "최종 판단은 정비 담당자가 한다. 모델은 재점검 순서를 정하는 참고 자료다."
+  ],
+  "lineage": {
+    "data": {
+      "train": "26c4d3711fd5",
+      "test": "5fa789dd8111",
+      "this_month": "379631f03af5"
+    },
+    "model": "fa51be49c230",
+    "submission": "5d5a4ee5dd39"
+  }
+}

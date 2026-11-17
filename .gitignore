@@ -1,0 +1,16 @@
+# 가상환경 · 맥 압축 찌꺼기 · 파이썬 캐시
+.venv/
+__MACOSX/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# 원본 실습 데이터 — 강사 제공 자료라 공개 저장소에 올리지 않음(로컬 data/에 둔다)
+data/
+
+# 스크립트로 언제든 다시 만드는 중간 파일
+artifacts/clean/
+artifacts/features_all.csv
+
+# Streamlit 비밀 정보 (DB 비밀번호)
+.streamlit/secrets.toml

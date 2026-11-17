@@ -1,0 +1,59 @@
+{
+  "submission_checks": {
+    "열 이름 = equipment_id, maintenance_date, prob": true,
+    "행 수 = drone_test.csv (1,241)": true,
+    "드론 · 정비일 조합이 drone_test.csv와 같음": true,
+    "날짜 형식 YYYY-MM-DD": true,
+    "prob 결측 없음 · 0 ~ 1": true
+  },
+  "all_pass": true,
+  "rebuild_rule_match_train": 1.0,
+  "test_2025": {
+    "pr_auc": 0.741,
+    "roc_auc": 0.849,
+    "base_rate": 0.236,
+    "n": 1241,
+    "positives": 293,
+    "top20_hits_12m": {
+      "model": 148.0,
+      "oldest": 65.0,
+      "random": 53.9
+    },
+    "cost_at_val_threshold": {
+      "300": {
+        "threshold": 0.22,
+        "flagged": 451,
+        "missed": 64,
+        "cost": 46260
+      },
+      "600": {
+        "threshold": 0.12,
+        "flagged": 543,
+        "missed": 47,
+        "cost": 60780
+      }
+    }
+  },
+  "validation_ref": {
+    "pr_auc": 0.776,
+    "roc_auc": 0.879,
+    "base_rate": 0.274,
+    "n": 643,
+    "positives": 176,
+    "top20_hits_6m": {
+      "model": 96.0,
+      "oldest": 50.0,
+      "random": 32.5
+    }
+  },
+  "note": "정답은 README 정의로 재현한 값(train에서 일치율 확인). 강사 채점과 다를 수 있으며 모델 · 임계값 선택에 쓰지 않았다.",
+  "lineage": {
+    "data": {
+      "train": "26c4d3711fd5",
+      "test": "5fa789dd8111",
+      "this_month": "379631f03af5"
+    },
+    "model": "fa51be49c230",
+    "submission": "5d5a4ee5dd39"
+  }
+}

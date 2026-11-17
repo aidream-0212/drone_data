@@ -1,0 +1,23 @@
+---
+name: drone-report
+description: 앞 단계 산출물(model_card · evaluation · score_2026-01 등)만 읽어 그래프 5개(reports/figures/)와 제출물 (2) 분석 보고서 reports/분석보고서.md(처리 기준 · 넣지 않은 컬럼 · 기간 분할 · 성능 vs 기준선 · 임계값 300/600 비교 · 한계)를 만든다. 분석 보고서, 발표 자료, 그래프, 결과 정리를 요청할 때 쓴다.
+---
+
+# drone-report — 분석 보고서 (제출물 (2))
+
+## 실행 (drone-train · drone-plan · drone-evaluate 다음)
+```powershell
+python .claude/skills/drone-report/scripts/report.py
+python scripts/check.py
+```
+
+## 보고서 틀 (임의로 바꾸지 않는다)
+요약(KPI 표) → 1 목적 → 2 데이터와 패턴(그림 1 · 2) → 3 처리 기준과 근거 → 4 피처와 넣지 않은 컬럼 → 5 기간 분할과 성능(그림 3) → 6 위험 표시 기준(그림 4, 300 · 600 · 150만원) → 7 위험 요인(그림 5) → 8 이번 달 계획 요약 → 9 한계
+
+## 지킬 것
+- 새로 학습 · 예측하지 않는다. 숫자는 앞 단계 파일(`artifacts/*.json` · `*.csv`, `reports/*_log.md`)에서만 가져오고 출처를 괄호에 적는다.
+- 표 · 그래프마다 '무엇을 보여 주는가 · 왜 중요한가 · 그래서 무엇을 하는가'를 문단으로 쓴다(발표 자료).
+- 그래프 색은 고정 순서: 파랑 = 모델, 주황 = 오래된 순, 청록 = 무작위. 축은 하나만 쓴다.
+- 원인은 '추정'으로 쓴다. 시험 기간 결과는 '재현 정답 기준'임을 밝힌다.
+- 끝에 `model_card.json`의 `limits`를 그대로 적는다.
+- 그래프를 만든 뒤 png를 직접 열어 글자 겹침 · 잘림을 확인한다.

@@ -1,0 +1,21 @@
+# drone_data — 드론 30일 안 재고장 예측 실습
+# 설치: python -m pip install -r requirements.txt (Python 3.12 가상환경)
+
+# 데이터 처리
+pandas>=2.2
+numpy>=1.26
+
+# 모델 · 평가 (PR-AUC, 기간 분할, 임계값)
+scikit-learn>=1.5
+lightgbm>=4.3
+joblib>=1.3
+
+# 보고서 그래프
+matplotlib>=3.8
+
+# 재점검 우선순위 앱
+streamlit>=1.50
+
+# Supabase(PostgreSQL) 연결 — st.connection("supabase", type="sql")
+sqlalchemy>=2.0
+psycopg2-binary>=2.9

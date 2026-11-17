@@ -1,0 +1,4 @@
+﻿time,step,data_train,data_test,data_this_month,metrics
+2026-11-17 13:40:36,train,26c4d3711fd5,5fa789dd8111,379631f03af5,"{""val_pr_auc"": 0.776, ""threshold"": 0.22, ""top20_val"": 96.0, ""model"": ""fa51be49c230"", ""submission"": ""5d5a4ee5dd39""}"
+2026-11-17 13:40:39,plan,26c4d3711fd5,5fa789dd8111,379631f03af5,"{""drones"": 81, ""over_threshold"": 33, ""top1"": ""DR-0115 0.9434"", ""model"": ""fa51be49c230"", ""score"": ""beb6fc3e9cf1""}"
+2026-11-17 13:40:41,evaluate,26c4d3711fd5,5fa789dd8111,379631f03af5,"{""test_pr_auc"": 0.741, ""top20_test"": 148.0, ""format_pass"": true, ""model"": ""fa51be49c230"", ""submission"": ""5d5a4ee5dd39""}"
