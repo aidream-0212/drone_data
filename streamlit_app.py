@@ -28,6 +28,46 @@ def load_model_card() -> dict:
 card = load_model_card()
 threshold = card.get("threshold")
 
+
+@st.cache_data
+def load_eval_score() -> dict | None:
+    path = ROOT / "artifacts" / "eval_score.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+# 검증 결과 (README 5. 평가 채점표 · python scripts/score_eval.py)
+ev = load_eval_score()
+with st.container(border=True):
+    if ev is None:
+        st.warning("검증 결과 파일(artifacts/eval_score.json)이 없습니다. `python scripts/score_eval.py`를 실행하세요.", title="검증 결과 없음")
+    else:
+        verdict = "합격" if ev["passed"] else "미달"
+        st.subheader(f"검증 결과: {ev['total']}점 / 100 · {verdict}", anchor=False)
+        st.caption(f"README 5. 평가 채점표 · 합격선 {ev['pass_mark']}점 · 채점 {ev['scored_at']} · `{ev['command']}`")
+        a = ev["areas"]
+        with st.container(horizontal=True):
+            st.metric("총점", f"{ev['total']}", border=True)
+            st.metric("A 시험 성능 vs 기준선", f"{a['A']['score']} / {a['A']['max']}", border=True)
+            st.metric("B 근거 타당성", f"{a['B']['score']} / {a['B']['max']}", border=True)
+            st.metric("C 숫자 일치", f"{a['C']['score']} / {a['C']['max']}", border=True)
+            st.metric("필수 조건", f"{sum(g['pass'] for g in ev['gates'])} / {len(ev['gates'])} 통과", border=True)
+        with st.expander("항목별 점수 · 필수 조건", icon=":material/fact_check:"):
+            st.dataframe(
+                pd.DataFrame(ev["items"])[["key", "name", "score", "max", "detail"]],
+                hide_index=True,
+                alt="검증 채점표 항목별 점수와 근거",
+                column_config={"key": "항목", "name": "점검", "score": "점수", "max": "배점",
+                               "detail": st.column_config.TextColumn("근거", width="large")},
+            )
+            st.dataframe(
+                pd.DataFrame(ev["gates"])[["key", "name", "pass", "detail"]],
+                hide_index=True,
+                alt="검증 필수 조건 통과 여부",
+                column_config={"key": "조건", "name": "필수 조건", "pass": st.column_config.CheckboxColumn("통과"),
+                               "detail": st.column_config.TextColumn("근거", width="large")},
+            )
+            st.caption(ev["scope_note"])
+
 conn = st.connection("supabase", type="sql")
 try:
     df: pd.DataFrame = conn.query(f'select * from public."{TABLE}" order by rank', ttl=600)

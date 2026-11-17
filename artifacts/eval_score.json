@@ -1,0 +1,124 @@
+{
+  "scored_at": "2026-11-17 14:51:36",
+  "command": "python scripts/score_eval.py",
+  "rubric": "README 5. 평가 채점표(A 40 · B 30 · C 30) + 필수 조건 G1 ~ G4",
+  "pass_mark": 95,
+  "total": 98.3,
+  "gates_pass": true,
+  "passed": true,
+  "areas": {
+    "A": {
+      "score": 40.0,
+      "max": 40
+    },
+    "B": {
+      "score": 30.0,
+      "max": 30
+    },
+    "C": {
+      "score": 28.3,
+      "max": 30
+    }
+  },
+  "items": [
+    {
+      "key": "A1",
+      "area": "A",
+      "name": "2025 PR-AUC vs 기준선(재고장 비율)",
+      "score": 20.0,
+      "max": 20,
+      "detail": "0.741 / 0.236 = 3.14배 (2배 이상 20 · 1.5배 이상 10)"
+    },
+    {
+      "key": "A2",
+      "area": "A",
+      "name": "12개월 20대 적중 합 vs 오래된 순 · 무작위",
+      "score": 20.0,
+      "max": 20,
+      "detail": "모델 63 / max(오래된 순 28, 무작위 23.2) = 2.25배 (1.5배 이상 20 · 1배 초과 10)"
+    },
+    {
+      "key": "B1",
+      "area": "B",
+      "name": "데이터 처리 기준 · 근거",
+      "score": 10.0,
+      "max": 10,
+      "detail": "규칙 4개 근거 · 건수 기재 · 행 삭제 0 O"
+    },
+    {
+      "key": "B2",
+      "area": "B",
+      "name": "컬럼 선택 · 누수 제외",
+      "score": 10.0,
+      "max": 10,
+      "detail": "제외 컬럼 이유 5/5 · 모델 입력 누수 없음"
+    },
+    {
+      "key": "B3",
+      "area": "B",
+      "name": "기간 분할 · 기준 선택",
+      "score": 10.0,
+      "max": 10,
+      "detail": "기간 분할 O · 검증 기간 비용 최소 O · 300/600 비교 O · '시험으로 고르지 않음' 명시 O"
+    },
+    {
+      "key": "C1",
+      "area": "C",
+      "name": "분석 보고서 숫자 = 결과 파일",
+      "score": 15.0,
+      "max": 15,
+      "detail": "핵심 숫자 20/20 · 지문 6/6"
+    },
+    {
+      "key": "C2",
+      "area": "C",
+      "name": "재점검 계획 = score 파일",
+      "score": 10.0,
+      "max": 10,
+      "detail": "20대 순위 · 드론 · 확률 20/20 · 기준 이상 33대 O · 20대 밖 13대 처리 방안 O · limits 그대로 O"
+    },
+    {
+      "key": "C3",
+      "area": "C",
+      "name": "숫자 출처 표기(표 · 그림 설명마다)",
+      "score": 3.33,
+      "max": 5,
+      "detail": "'무엇을 보여 주는가' 4/6곳에 출처 파일 · 출처 없음: ['**무엇을 보여 주는가** — 정비 구분과 드론 유형에 따라 30일 안 …', '**무엇을 보여 주는가** — 분기별 재고장 비율이 15.2%(2023Q…']"
+    }
+  ],
+  "gates": [
+    {
+      "key": "G1",
+      "name": "제출물(1) 형식",
+      "pass": true,
+      "detail": "evaluation.json submission_checks 5/5"
+    },
+    {
+      "key": "G2",
+      "name": "check.py 11/11",
+      "pass": true,
+      "detail": "check.py (11/11)"
+    },
+    {
+      "key": "G3",
+      "name": "독립 검증 노트북 전부 통과(현재 지문)",
+      "pass": true,
+      "detail": "63/63 · X 0건 · 현재 score 지문으로 실행"
+    },
+    {
+      "key": "G4",
+      "name": "앱 DB 지문 = 현재 score 지문",
+      "pass": true,
+      "detail": "DB ['1aedddc723ca'] · 현재 1aedddc723ca"
+    }
+  ],
+  "scope_note": "B는 근거 기재 · 숫자 일치까지 자동 판정한다. 근거의 업무상 타당성은 사람이 판단한다. A의 2025 정답은 README 정의로 재현한 값이며 강사 채점과 다를 수 있다.",
+  "lineage": {
+    "score": "1aedddc723ca",
+    "model": "fa51be49c230",
+    "submission": "5d5a4ee5dd39",
+    "data_train": "26c4d3711fd5",
+    "data_test": "5fa789dd8111",
+    "data_this_month": "379631f03af5"
+  }
+}
