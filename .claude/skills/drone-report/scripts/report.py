@@ -238,6 +238,12 @@ def main():
          f"{'재고장 손해가 클수록 더 넓게 잡는 것이 싸다.' if down600 else '이 데이터에서는 비용이 올라도 기준이 내려가지 않았다.'}", "",
          f"**그래서 무엇을 하는가** — 운영 기준은 {thr:.2f}로 두고, 임무 중요도가 높은 시기(손해가 큰 경우)에는 600만원 기준을 쓴다. 기준은 시험 기간(2025)으로 고르지 않았다. "
          "참고로 같은 기준을 2025에 그대로 쓰면 아래와 같다(재현 정답).", "", L.md_table(test_cost), "",
+         f"2025에 같은 기준을 쓰면 놓친 재고장 비율이 검증 {th['300']['missed'] / v['positives'] * 100:.0f}%({th['300']['missed']}/{v['positives']})에서 "
+         f"{t['cost_at_val_threshold']['300']['missed'] / t['positives'] * 100:.0f}%({t['cost_at_val_threshold']['300']['missed']}/{t['positives']})로 "
+         f"{'늘고' if t['cost_at_val_threshold']['300']['missed'] / t['positives'] > th['300']['missed'] / v['positives'] else '줄고'}, "
+         f"평균 예측 확률({card['submission']['prob_mean']})이 재현 정답 비율({t['base_rate']})보다 "
+         f"{'높다' if card['submission']['prob_mean'] > t['base_rate'] else '낮다'}({src_c} · {src_e}). "
+         "평가 확인용이므로 기준은 바꾸지 않는다.", "",
          "## 7. 무엇이 위험을 올리는가", "",
          f"![피처 중요도]({f5})", "",
          "**무엇을 보여 주는가** — 최종 모델이 판단에 많이 쓴 피처다(`model_card.json` importance_gain).", "",

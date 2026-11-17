@@ -210,6 +210,7 @@ def contributions(model, X):
 def reasons(model, X, top=3):
     """행마다 위험을 가장 많이 올린 피처 top개를 정비반장이 읽을 수 있는 글로."""
     c = contributions(model, X)
+    c = c.drop(columns=[f for f in ("equipment_type", "season") if f in c.columns])  # 조치할 수 없는 속성은 사유에서 뺀다
     out = []
     for i in X.index:
         up = c.loc[i][c.loc[i] > 0].sort_values(ascending=False).head(top)

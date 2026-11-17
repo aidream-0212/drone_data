@@ -73,6 +73,12 @@
 - `check.py` 10번(다시 계산 대조)은 현재 데이터 + 저장된 모델로 시험 1,241건 · 이번 달 20대를 다시 계산해 저장된 결과와 비교한다.
 - 원본 `data/`는 공개 저장소에 올리지 않는다(.gitignore). 지문으로 어느 데이터에서 나온 결과인지 확인한다.
 
+### 커밋 · 푸시
+- `.streamlit/secrets.toml`(DB 비밀번호)은 git에 올리지 않는다. `.gitignore`에 등록돼 있다.
+- 커밋 전에 `git check-ignore .streamlit/secrets.toml`을 실행한다. 경로가 출력되지 않으면 커밋 · 푸시하지 않는다.
+- `git add` 뒤 `git status`에 `secrets.toml`이 없는지 확인한다.
+- 푸시 전에 새로 올리는 파일(노트북 출력 포함)에 비밀번호 · host · username이 없는지 확인한다.
+
 ### 보고
 - 드론 위험도 · 순위 · 확률은 `drone-plan` 출력(`artifacts/score_2026-01.csv`)만 인용한다.
 - 숫자마다 어느 파일 · 어느 명령에서 나왔는지 적는다. 실행하지 않은 계산의 숫자는 쓰지 않는다.

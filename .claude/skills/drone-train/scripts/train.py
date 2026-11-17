@@ -79,7 +79,7 @@ def main():
         "submission": {"path": "outputs/test_predictions_2025.csv", "rows": len(sub),
                        "prob_mean": round(float(sub.prob.mean()), 3), "flag_ge_threshold": int((sub.prob >= thr).sum())},
         "limits": ["교육용 가상 데이터로 학습했다. 실제 드론 운용에 그대로 쓰지 않는다.",
-                   "학습 기간(2023 ~ 2024)보다 재고장 비율이 오르는 추세여서, 확률 · 기준이 뒤 기간에 낮게 맞을 수 있다.",
+                   "재고장 비율이 기간마다 달라(train 분기별 15.2% ~ 29.5%), 확률 · 기준이 뒤 기간의 실제 비율과 어긋날 수 있다(높게도 낮게도).",
                    "확률은 '정비 뒤 30일' 기준이다. 정비 기록이 없는 드론은 판단하지 않는다.",
                    "최종 판단은 정비 담당자가 한다. 모델은 재점검 순서를 정하는 참고 자료다."],
         "lineage": {"data": L.data_fingerprints(), "model": L.fingerprint(L.MODEL_PATH),
