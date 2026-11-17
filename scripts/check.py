@@ -81,7 +81,7 @@ def evaluation():
     e = json.loads(txt(p))
     t = e["test_2025"]
     return e["all_pass"], (f"제출 형식 {'통과' if e['all_pass'] else '실패'} · 2025 PR-AUC {t['pr_auc']} (기준선 {t['base_rate']}) · "
-                          f"20대 적중 {t['top20_hits_12m']['model']:.0f} vs 오래된 순 {t['top20_hits_12m']['oldest']:.0f}")
+                          f"20대 적중(드론 단위) {t['top20_hits_12m']['model']:.0f} vs 오래된 순 {t['top20_hits_12m']['oldest']:.0f}")
 
 
 def lineage():
@@ -114,7 +114,7 @@ def recompute():
     mg = sub.merge(te[["equipment_id", "maintenance_date", "prob"]], on=["equipment_id", "maintenance_date"],
                    suffixes=("_saved", "_now"), how="outer", validate="1:1")
     diff_t = float((mg.prob_saved - mg.prob_now).abs().max())
-    mo = s["month"].sort_values("maintenance_date").drop_duplicates("equipment_id", keep="last").copy()
+    mo = L.latest_per_drone(s["month"]).copy()
     mo["prob"] = model.predict_proba(mo[L.FEATURES])[:, 1]
     now_top = list(mo.nlargest(L.CAPACITY, "prob").equipment_id)
     saved = pd.read_csv(A / "score_2026-01.csv")
@@ -123,12 +123,25 @@ def recompute():
     return ok, f"시험 {len(mg):,}건 확률 최대 차이 {diff_t:.1e} · 이번 달 20대 순위 {'같음' if same_top else '다름'}"
 
 
+def verified():
+    """drone-verify가 지금 결과(모델 · 제출 · 점수 지문)를 대상으로 '모두 통과'했는가."""
+    t = txt(R / "verification.md")
+    if not t:
+        return False, "reports/verification.md 없음"
+    fresh = all(L.fingerprint(p) in t for p in (L.MODEL_PATH, L.SUBMIT_PATH, A / "score_2026-01.csv"))
+    passed = "**모두 통과**" in t
+    full = "--quick" not in t
+    return passed and fresh, (f"{'모두 통과' if passed else '실패 항목 있음'} · 지문 {'최신' if fresh else '오래됨(다시 검증 필요)'}"
+                              f" · {'재현성 포함' if full else '재현성 제외(--quick)'}")
+
+
 ITEMS = [("[1] 데이터 살펴보기", step1, "drone-eda"), ("[2] 데이터 처리 기준", step2, "drone-preprocess"),
          ("[3·4] 피처 · 쓸 컬럼", step34, "drone-features"), ("[5·6] 학습 · 검증 · 기준", step56, "drone-train"),
          ("[7] 제출물(1) 시험 예측", step7, "drone-train"), ("[8] 제출물(3) 재점검 계획", step8, "drone-plan"),
          ("평가 자체 점검", evaluation, "drone-evaluate"), ("제출물(2) 분석 보고서", report, "drone-report"),
          ("추적 · 지문 연결", lineage, "drone-train → plan → evaluate → report 다시 실행"),
-         ("추적 · 다시 계산 대조", recompute, "drone-train → plan 다시 실행")]
+         ("추적 · 다시 계산 대조", recompute, "drone-train → plan 다시 실행"),
+         ("결과 검증(verify)", verified, "drone-verify")]
 
 if __name__ == "__main__":
     done = []

@@ -16,6 +16,5 @@ matplotlib>=3.8
 # 재점검 우선순위 앱
 streamlit>=1.50
 
-# Supabase(PostgreSQL) 연결 — st.connection("supabase", type="sql")
 sqlalchemy>=2.0
 psycopg2-binary>=2.9

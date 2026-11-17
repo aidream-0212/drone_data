@@ -110,7 +110,7 @@
 [출력] 검증 성능 표(PR-AUC vs 기준선), 월 20대 적중 표(모델 · 오래된 순 · 무작위), 임계값 비교 표, 제출 파일 경로.
 [검증] 콘솔 출력 그대로, 그리고 python scripts/check.py.
 ```
-**확인할 것** — PR-AUC가 기준선(재고장 비율)보다 높은가, 모델 적중이 오래된 순 · 무작위보다 많은가, 600만원일 때 기준이 내려가는가(손해가 크면 더 넓게 잡음).
+**확인할 것** — PR-AUC가 기준선(재고장 비율)보다 높은가, 모델 적중이 오래된 순 · 무작위보다 많은가(**드론 단위** 숫자로 본다. 기록 단위는 같은 드론이 여러 번 세어져 커진다), 600만원일 때 기준이 내려가는가(손해가 크면 더 넓게 잡음).
 
 ---
 
@@ -174,6 +174,38 @@
 
 ---
 
+## 8-2. 지난달 계획 적중 확인 — 다음 달 기록이 들어온 뒤
+
+**프롬프트**
+```
+[역할] 정비반장에게 결과를 보고하는 분석가.
+[맥락] drone-evaluate 스킬의 plan_hits.py. 2026-01 계획은 artifacts/score_2026-01.csv.
+[작업] <2026-02 기록 파일>로 1월 재점검 20대가 실제로 30일 안에 재고장 났는지 판정하고, 오래된 순 · 무작위와 비교해 줘.
+       (아직 기록이 없으면 --simulate 2025-12로 로직만 확인해 줘.)
+[제약] 계획 · 모델 · 임계값을 고치지 마. 개입 효과(재점검으로 고장을 막으면 '정상')를 함께 적어. 보류 드론 수를 밝혀.
+[출력] 요약 표, 20대 판정 표, 계획 밖 재고장 드론 표.
+[검증] 콘솔 출력 그대로, python scripts/check.py.
+```
+**확인할 것** — 보류 0대인가(아니면 다음 달 기록을 더 넣어 다시 실행), 계획 20대 적중이 오래된 순 · 무작위 기대값보다 많은가.
+
+---
+
+## 8-3. 결과 검증 — 계산이 맞는가 (커밋 · 제출 전) — `drone-verify`
+
+**프롬프트**
+```
+[역할] 결과 검수 담당자.
+[맥락] drone-verify 스킬. 앞 단계(train · plan · evaluate · report)가 끝난 상태.
+[작업] 재현성 · 독립 대조 · 데이터 가정 · 결함 주입 네 가지로 결과가 맞게 계산됐는지 검증해 줘.
+[제약] 원본 data/는 건드리지 마(복사본 사용). 실패 항목이 있으면 결과 파일을 손으로 고치지 말고 원인부터 보고해.
+       '계산이 맞는가'와 '예측이 맞았는가'(evaluate)를 구분해서 말해.
+[출력] 항목별 통과/실패 표, 종합 줄.
+[검증] python scripts/check.py 11번 '결과 검증(verify)'이 O인지.
+```
+**확인할 것** — 14/14 통과, 재현성 포함 여부, 지문이 최신인지(결과를 다시 만든 뒤 검증을 안 했으면 check 11번이 X).
+
+---
+
 ## 9. 마무리 — 커밋
 
 **프롬프트**
@@ -194,6 +226,8 @@ python .claude/skills/drone-train/scripts/train.py
 python .claude/skills/drone-plan/scripts/plan.py
 python .claude/skills/drone-evaluate/scripts/evaluate.py
 python .claude/skills/drone-report/scripts/report.py
+python .claude/skills/drone-evaluate/scripts/plan_hits.py --simulate all
+python .claude/skills/drone-verify/scripts/verify.py
 python scripts/check.py
 ```
 한글이 깨지면 먼저 `$env:PYTHONIOENCODING='utf-8'`.
@@ -207,4 +241,6 @@ python scripts/check.py
 - "이번 달 재점검 20대 골라줘" → drone-plan
 - "평가해줘" → drone-evaluate
 - "보고서 만들어줘" → drone-report
+- "지난달 20대 맞았어?" → drone-evaluate(plan_hits)
+- "검증해줘" · "커밋 전에 점검해줘" → drone-verify
 - "어디까지 했지?" → python scripts/check.py

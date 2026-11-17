@@ -39,10 +39,18 @@
     "base_rate": 0.274,
     "n": 643,
     "positives": 176,
+    "top20_unit": "drone(그 달 드론별 최근 기록)",
     "top20_hits_6m": {
+      "model": 38.0,
+      "oldest": 18.0,
+      "random": 13.600000000000001,
+      "failures": 56.0
+    },
+    "top20_hits_6m_records": {
       "model": 96.0,
       "oldest": 50.0,
-      "random": 32.5
+      "random": 32.5,
+      "failures": 176.0
     }
   },
   "threshold": 0.22,

@@ -14,10 +14,18 @@
     "base_rate": 0.236,
     "n": 1241,
     "positives": 293,
+    "top20_unit": "drone(그 달 드론별 최근 기록)",
     "top20_hits_12m": {
+      "model": 63.0,
+      "oldest": 28.0,
+      "random": 23.200000000000003,
+      "failures": 96.0
+    },
+    "top20_hits_12m_records": {
       "model": 148.0,
       "oldest": 65.0,
-      "random": 53.9
+      "random": 53.9,
+      "failures": 293.0
     },
     "cost_at_val_threshold": {
       "300": {
@@ -40,10 +48,18 @@
     "base_rate": 0.274,
     "n": 643,
     "positives": 176,
+    "top20_unit": "drone(그 달 드론별 최근 기록)",
     "top20_hits_6m": {
+      "model": 38.0,
+      "oldest": 18.0,
+      "random": 13.600000000000001,
+      "failures": 56.0
+    },
+    "top20_hits_6m_records": {
       "model": 96.0,
       "oldest": 50.0,
-      "random": 32.5
+      "random": 32.5,
+      "failures": 176.0
     }
   },
   "note": "정답은 README 정의로 재현한 값(train에서 일치율 확인). 강사 채점과 다를 수 있으며 모델 · 임계값 선택에 쓰지 않았다.",

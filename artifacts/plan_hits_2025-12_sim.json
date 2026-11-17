@@ -1,0 +1,19 @@
+{
+  "month": "2025-12",
+  "source": "--simulate 2025-12",
+  "threshold": 0.22,
+  "covered_until": "2026-01-31",
+  "drones": 93,
+  "judged": 93,
+  "pending": 0,
+  "failures": 15,
+  "base_rate": 0.161,
+  "top20_judged": 20,
+  "top20_hits": 9,
+  "oldest_hits": 5,
+  "random_expected": 3.2,
+  "over_threshold": 26,
+  "over_threshold_hits": 10,
+  "missed": 6,
+  "cost": 3000
+}

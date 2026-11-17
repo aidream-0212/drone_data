@@ -154,14 +154,36 @@ def make_model():
     return Pipeline([("pre", pre), ("model", lgbm)])
 
 
-def monthly_topk(df, score_col, y_col=TARGET, k=CAPACITY):
-    """달마다 score_col 상위 k건을 골랐을 때 실제 재고장 수와 무작위 기대값. 열: month, n, picked, hits, random."""
+def latest_per_drone(df):
+    """드론마다 가장 최근 기록 하나(같은 날이면 뒤 행), 드론 번호 순 정렬(동점 순위를 고정).
+    drone-plan · 드론 단위 평가 · 계획 적중 확인이 같이 쓴다."""
+    out = df.sort_values("maintenance_date", kind="stable").drop_duplicates("equipment_id", keep="last")
+    return out.sort_values("equipment_id", kind="stable")
+
+
+def monthly_topk(df, score_col, y_col=TARGET, k=CAPACITY, unit="drone"):
+    """달마다 score_col 상위 k를 골랐을 때 실제 재고장 수와 무작위 기대값.
+    unit="drone"(기본): 그 달 드론별 최근 기록 하나만 남기고 상위 k대 — README '매달 20대' · drone-plan과 같은 방식.
+    unit="record": 기록 단위(같은 드론의 여러 기록이 함께 뽑힐 수 있음) — 참고용.
+    열: month, n, picked, hits, failures(그 달 전체 재고장), random."""
     rows = []
     for m, g in df.groupby(df["maintenance_date"].dt.to_period("M")):
+        if unit == "drone":
+            g = latest_per_drone(g)
         top = g.nlargest(k, score_col)
         rows.append({"month": str(m), "n": len(g), "picked": len(top), "hits": int(top[y_col].sum()),
-                     "random": round(min(k, len(g)) * g[y_col].mean(), 1)})
+                     "failures": int(g[y_col].sum()), "random": round(min(k, len(g)) * g[y_col].mean(), 1)})
     return pd.DataFrame(rows)
+
+
+def topk_compare(df, y_col=TARGET, unit="drone"):
+    """모델(prob) · 오래된 순 · 무작위의 월별 표와 합계."""
+    m = monthly_topk(df, "prob", y_col, unit=unit)
+    o = monthly_topk(df, "equipment_age_years", y_col, unit=unit)
+    top = m[["month", "n", "failures", "hits"]].rename(columns={"hits": "model"}).assign(
+        oldest=o["hits"].to_numpy(), random=m["random"].to_numpy())
+    tot = {k: float(top[k].sum()) for k in ["model", "oldest", "random", "failures"]}
+    return top, tot
 
 
 def cost_table(y, prob, miss=COST_MISS, check=COST_CHECK):

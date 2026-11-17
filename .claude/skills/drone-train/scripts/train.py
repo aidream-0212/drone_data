@@ -31,11 +31,8 @@ def main():
     metrics = {"pr_auc": round(float(average_precision_score(y, val.prob)), 3),
                "roc_auc": round(float(roc_auc_score(y, val.prob)), 3),
                "base_rate": round(float(y.mean()), 3), "n": len(val), "positives": int(y.sum())}
-    mt = L.monthly_topk(val, "prob")
-    old = L.monthly_topk(val, "equipment_age_years")
-    top = mt[["month", "n", "hits"]].rename(columns={"hits": "model"}).assign(
-        oldest=old["hits"].to_numpy(), random=mt["random"].to_numpy())
-    hits = {k: float(top[k].sum()) for k in ["model", "oldest", "random"]}
+    top, hits = L.topk_compare(val, unit="drone")          # 주 지표: README '20대' = 드론 단위
+    _, hits_rec = L.topk_compare(val, unit="record")       # 참고: 기록 단위(같은 드론 중복 가능)
 
     th, ct = {}, {}
     for miss in (150, 300, 600):
@@ -73,7 +70,8 @@ def main():
         "split": {"fit": f"~ {L.FIT_END} ({len(fit):,}건)", "val": f"{L.VAL_START} ~ {L.VAL_END} ({len(val):,}건)",
                   "final_train": f"2023-01-01 ~ 2024-12-31 ({len(train):,}건)", "test": f"2025 ({len(test):,}건, 정답 없음)"},
         "features": L.FEATURES, "excluded": L.EXCLUDED,
-        "validation": {**metrics, "top20_hits_6m": hits},
+        "validation": {**metrics, "top20_unit": "drone(그 달 드론별 최근 기록)", "top20_hits_6m": hits,
+                       "top20_hits_6m_records": hits_rec},
         "threshold": thr, "threshold_rule": f"검증 기간 비용 최소: 놓친 재고장 {L.COST_MISS}만원 × 건수 + 재점검 {L.COST_CHECK}만원 × 기준 이상 건수",
         "threshold_by_miss_cost": {str(k): {kk: (float(vv) if kk == "threshold" else int(vv)) for kk, vv in v.items()} for k, v in th.items()},
         "capacity_per_month": L.CAPACITY,
@@ -98,8 +96,10 @@ def main():
            "## 2. 검증 기간 성능 (fit 모델)", "",
            L.md_table(pd.DataFrame([{"PR-AUC": metrics["pr_auc"], "기준선(재고장 비율)": metrics["base_rate"],
                                      "ROC-AUC": metrics["roc_auc"], "건수": metrics["n"], "재고장": metrics["positives"]}])), "",
-           "### 월 20대 적중 수 (검증 6개월)", "", L.md_table(top, "{:,.1f}"), "",
-           f"- 합계: 모델 {hits['model']:.0f} · 오래된 순 {hits['oldest']:.0f} · 무작위(기대값) {hits['random']:.1f}", "",
+           "### 월 20대 적중 수 (검증 6개월, 드론 단위 = 그 달 드론별 최근 기록)", "", L.md_table(top, "{:,.1f}"), "",
+           f"- 합계: 모델 {hits['model']:.0f} · 오래된 순 {hits['oldest']:.0f} · 무작위(기대값) {hits['random']:.1f} "
+           f"/ 그 달 재고장 드론 {hits['failures']:.0f}대 중 모델이 잡은 비율 {hits['model'] / max(hits['failures'], 1) * 100:.0f}%",
+           f"- 참고(기록 단위, 같은 드론 중복 선택 포함): 모델 {hits_rec['model']:.0f} · 오래된 순 {hits_rec['oldest']:.0f} · 무작위 {hits_rec['random']:.1f}", "",
            "## 3. 위험 표시 기준 (검증 기간에서 선택)", "",
            L.md_table(pd.DataFrame([{"놓친 재고장 비용(만원)": k, **v} for k, v in card["threshold_by_miss_cost"].items()])), "",
            f"- 300만원 기준 {thr:.2f} → 600만원이면 {th[600]['threshold']:.2f}"
@@ -115,7 +115,8 @@ def main():
     (L.REP / "train_log.md").write_text("\n".join(out), encoding="utf-8")
 
     print(f"검증 PR-AUC {metrics['pr_auc']} (기준선 {metrics['base_rate']}) · ROC-AUC {metrics['roc_auc']}")
-    print(f"검증 월 20대 적중 합: 모델 {hits['model']:.0f} · 오래된 순 {hits['oldest']:.0f} · 무작위 {hits['random']:.1f}")
+    print(f"검증 월 20대 적중 합(드론 단위): 모델 {hits['model']:.0f} · 오래된 순 {hits['oldest']:.0f} · 무작위 {hits['random']:.1f}"
+          f" · 재고장 드론 {hits['failures']:.0f}  (참고 기록 단위: 모델 {hits_rec['model']:.0f})")
     for k, v in th.items():
         print(f"임계값({k}만원): {v['threshold']:.2f} · 기준 이상 {int(v['flagged'])} · 놓침 {int(v['missed'])} · 비용 {int(v['cost']):,}")
     print(f"제출: {L.SUBMIT_PATH.relative_to(ROOT)} {len(sub)}행 · 상위 피처: {', '.join(imp.index[:3])}")

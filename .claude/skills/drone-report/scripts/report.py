@@ -90,7 +90,7 @@ def main():
             a.plot(x, t[col], color=c, lw=2, marker="o", ms=5, label=lab)
         a.set_title(title, loc="left", color=INK, fontsize=11)
         a.tick_params(axis="x", rotation=45)
-    ax[0].set_ylabel("20대 중 실제 재고장 수")
+    ax[0].set_ylabel("20대 중 실제 재고장 드론 수")
     h, lab = ax[1].get_legend_handles_labels()
     fig.legend(h, lab, frameon=False, loc="lower center", ncol=3, bbox_to_anchor=(0.5, 1.0))
     f3 = save(fig, "fig3_monthly_hits.png")
@@ -148,10 +148,14 @@ def main():
     kpi = pd.DataFrame([
         {"지표": "PR-AUC", "검증 2024 하반기": v["pr_auc"], "시험 2025(재현 정답)": t["pr_auc"], "기준선": f"{v['base_rate']} / {t['base_rate']} (재고장 비율)"},
         {"지표": "ROC-AUC", "검증 2024 하반기": v["roc_auc"], "시험 2025(재현 정답)": t["roc_auc"], "기준선": "0.5"},
-        {"지표": "월 20대 적중 합", "검증 2024 하반기": f"{v['top20_hits_6m']['model']:.0f} (6개월)",
+        {"지표": "월 20대 적중 합(드론 단위)", "검증 2024 하반기": f"{v['top20_hits_6m']['model']:.0f} (6개월)",
          "시험 2025(재현 정답)": f"{t['top20_hits_12m']['model']:.0f} (12개월)",
          "기준선": f"오래된 순 {v['top20_hits_6m']['oldest']:.0f} / {t['top20_hits_12m']['oldest']:.0f} · 무작위 {v['top20_hits_6m']['random']:.1f} / {t['top20_hits_12m']['random']:.1f}"},
+        {"지표": "재고장 드론 중 잡은 비율", "검증 2024 하반기": f"{v['top20_hits_6m']['model'] / v['top20_hits_6m']['failures'] * 100:.0f}%",
+         "시험 2025(재현 정답)": f"{t['top20_hits_12m']['model'] / t['top20_hits_12m']['failures'] * 100:.0f}%",
+         "기준선": f"재고장 드론 {v['top20_hits_6m']['failures']:.0f} / {t['top20_hits_12m']['failures']:.0f}대"},
     ])
+    rec_v, rec_t = v["top20_hits_6m_records"], t["top20_hits_12m_records"]
     prep = pd.DataFrame([
         {"대상": "downtime_hours = 999", "건수(train)": int((raw.downtime_hours == 999).sum()), "처리": "행 유지, 값만 결측", "근거": "999 다음 큰 값 74.0 → 미입력 표시값"},
         {"대상": "maintenance_cost > 10,000", "건수(train)": int((raw.maintenance_cost > 10000).sum()), "처리": "÷100", "근거": "다음 큰 값 478, 나누면 150~190 → 자릿수 실수"},
@@ -214,8 +218,12 @@ def main():
          "## 5. 기간 분할과 성능 (README [5])", "",
          L.md_table(pd.DataFrame([card["split"]])), "",
          f"![월 20대 적중 수]({f3})", "",
-         "**무엇을 보여 주는가** — 매달 확률 상위 20대를 골랐을 때 실제로 30일 안에 재고장 난 드론 수를 모델 · 오래된 순 · 무작위와 비교한다"
-         f"(`artifacts/val_monthly_top20.csv`, `artifacts/test_monthly_top20.csv`).", "",
+         "**무엇을 보여 주는가** — 매달 드론별 최근 기록 하나로 확률 상위 20대를 골랐을 때(재점검 계획과 같은 방식) 실제로 30일 안에 재고장 난 드론 수를 "
+         f"모델 · 오래된 순 · 무작위와 비교한다(`artifacts/val_monthly_top20.csv`, `artifacts/test_monthly_top20.csv`). "
+         f"2025년 재고장 드론 {t['top20_hits_12m']['failures']:.0f}대 중 {t['top20_hits_12m']['model']:.0f}대"
+         f"({t['top20_hits_12m']['model'] / t['top20_hits_12m']['failures'] * 100:.0f}%)를 20대 안에서 잡았다.", "",
+         f"참고로 기록 단위로 세면(같은 드론의 여러 정비 기록이 20자리를 함께 차지) 2025년 모델 {rec_t['model']:.0f} · 오래된 순 {rec_t['oldest']:.0f} · "
+         f"무작위 {rec_t['random']:.1f}건이다. 한 드론이 여러 번 세어져 실제 재점검 대수보다 커지므로 판단에는 드론 단위를 쓴다({src_e}).", "",
          f"**왜 중요한가** — 정비반이 실제로 쓰는 방식(한 달 20대)으로 본 성능이다. 2025년 모델 {t['top20_hits_12m']['model']:.0f}건은 오래된 순({t['top20_hits_12m']['oldest']:.0f}건)의 "
          f"약 {ratio_old:.1f}배다. "
          f"{'경과연수만으로 고르는 방식보다 더 많은 재고장을 잡는다.' if ratio_old > 1 else '경과연수 방식보다 낫다고 말할 수 없다.'}", "",

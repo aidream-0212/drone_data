@@ -42,7 +42,7 @@ def main():
     thr = card["threshold"]
     df = L.load_all()
     month = L.split(df)["month"]
-    latest = month.sort_values("maintenance_date").drop_duplicates("equipment_id", keep="last").copy()
+    latest = L.latest_per_drone(month).copy()
     latest["prob"] = model.predict_proba(latest[L.FEATURES])[:, 1]
     latest["reasons"] = L.reasons(model, latest[L.FEATURES])
     latest = latest.sort_values("prob", ascending=False).reset_index(drop=True)

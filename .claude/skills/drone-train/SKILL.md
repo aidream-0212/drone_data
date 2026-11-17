@@ -12,7 +12,7 @@ python .claude/skills/drone-train/scripts/train.py
 
 ## 순서
 1. `drone_lib.load_all()` → `split()`. 학습(fit) ~2024-06-30, 검증(val) 2024-07-01 ~ 12-31, 시험(test) 2025. 무작위로 나누지 않는다.
-2. fit으로 `make_model()`을 학습해 val 확률을 구한다. PR-AUC를 기준선(재고장 비율)과, 월 20대 적중 수를 오래된 순 · 무작위(기대값)와 비교한다.
+2. fit으로 `make_model()`을 학습해 val 확률을 구한다. PR-AUC를 기준선(재고장 비율)과, 월 20대 적중 수를 오래된 순 · 무작위(기대값)와 비교한다. 적중은 `topk_compare(unit="drone")`(그 달 드론별 최근 기록)로 세고, 기록 단위는 참고로만 남긴다.
 3. val에서 `놓친 재고장 × 300 + 기준 이상 × 60`(만원)이 가장 작은 임계값(0.05 ~ 0.94, 0.01 간격)을 고른다. 600만원 · 150만원도 같이 계산한다.
 4. train 전체(2023 ~ 2024)로 최종 모델을 다시 학습해 test 1,241건 모두에 확률을 매기고 `outputs/test_predictions_2025.csv`(equipment_id, maintenance_date YYYY-MM-DD, prob)로 저장한다.
 5. 저장: `artifacts/drone_model.joblib`, `artifacts/model_card.json`, `artifacts/val_predictions.csv`, `artifacts/val_monthly_top20.csv`, `reports/train_log.md`.

@@ -27,7 +27,9 @@
 | 4 | `drone-train` | [5] 검증 · [6] 기준 · [7] 제출 | 모델 · `model_card.json` · `outputs/test_predictions_2025.csv` · `reports/train_log.md` |
 | 5 | `drone-plan` | [8] 20대 · 제출물 (3) | `artifacts/score_2026-01.csv` · `reports/2026-01_재점검계획.md` |
 | 6 | `drone-evaluate` | 5. 평가 | `artifacts/evaluation.json` · `reports/evaluation.md` |
+| 6-1 | `drone-evaluate` (plan_hits.py) | 다음 달 기록 도착 후 | `reports/plan_hits_<달>.md` — 지난달 20대 적중 확인 |
 | 7 | `drone-report` | 제출물 (2) | `reports/분석보고서.md` · `reports/figures/` |
+| 8 | `drone-verify` | 커밋 · 제출 전 | `reports/verification.md` — 재현성 · 독립 대조 · 데이터 가정 · 결함 주입 |
 
 ## 명령 (Windows PowerShell, drone_data 폴더, 가상환경 켠 상태)
 - 가상환경: `.venv\Scripts\Activate.ps1` (Python 3.12, `pip install -r requirements.txt`)
@@ -58,10 +60,12 @@
 - 예측 시점은 '정비를 마친 직후'다. `availability_rate` · `equipment_id` · `unit_code` · `maintenance_date` · `fault_code`는 모델에 넣지 않는다.
 - 기간으로 나눈다: fit ~ 2024-06-30, 검증 2024-07-01 ~ 12-31, 최종 학습 = train 전체, 시험 2025. 무작위로 나누지 않는다.
 - 성능은 PR-AUC와 월 20대 적중 수를 기준선(재고장 비율 · 무작위 · 오래된 순)과 함께 적는다. 정확도 하나로 말하지 않는다.
+- 월 20대 적중은 **드론 단위**(그 달 드론별 최근 기록 하나, `monthly_topk(unit="drone")`)로 센다. drone-plan과 같은 방식이다. 기록 단위는 같은 드론이 여러 번 뽑혀 부풀려지므로 '참고'로만 적는다.
 - 임계값은 검증 기간에서 고른다(300 · 600만원 비교). 시험 기간으로 고르지 않는다.
 - 2025 재현 정답(drone-evaluate)은 평가 확인용이다. 학습 · 피처 · 임계값 선택에 쓰지 않는다.
 - 집계 결과를 원인으로 단정하지 않는다. 확인할 수 없으면 '추정'이라고 쓴다.
-- 코드를 고치거나 스킬을 실행한 뒤에는 `python scripts/check.py`를 실행하고 결과를 그대로 보여 준다(10항목).
+- 코드를 고치거나 스킬을 실행한 뒤에는 `python scripts/check.py`를 실행하고 결과를 그대로 보여 준다(11항목).
+- 커밋 · 제출 전, `drone_lib.py`를 고친 뒤, 새 데이터를 받은 뒤에는 `drone-verify`를 실행한다. '계산이 맞는가'(verify)와 '예측이 맞았는가'(evaluate)를 구분해 보고한다.
 
 ### 추적
 - train · plan · evaluate는 입력 데이터 · 모델 · 결과 파일의 지문(SHA-256 앞 12자리)을 `model_card.json` · `plan_meta.json` · `evaluation.json`에 남기고, `artifacts/run_history.csv`에 실행 기록 한 줄을 덧붙인다.

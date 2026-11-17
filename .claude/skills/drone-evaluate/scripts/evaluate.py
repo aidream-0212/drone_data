@@ -61,10 +61,8 @@ def main():
     s = sub.assign(_d=sub.maintenance_date)
     te = te.merge(s[["equipment_id", "_d", "prob"]], on=["equipment_id", "_d"], how="left", validate="1:1")
     y, p = te[Y], te["prob"]
-    m = L.monthly_topk(te, "prob", y_col=Y)
-    o = L.monthly_topk(te, "equipment_age_years", y_col=Y)
-    top = m[["month", "n", "hits"]].rename(columns={"hits": "model"}).assign(oldest=o.hits.to_numpy(), random=m.random.to_numpy())
-    hits = {k: float(top[k].sum()) for k in ["model", "oldest", "random"]}
+    top, hits = L.topk_compare(te, y_col=Y, unit="drone")        # 주 지표: 드론 단위
+    _, hits_rec = L.topk_compare(te, y_col=Y, unit="record")     # 참고: 기록 단위
     costs = {}
     for miss, t in [(300, thr), (600, t600)]:
         c = L.cost_table(y, p, miss=miss)
@@ -75,7 +73,8 @@ def main():
         "test_2025": {"pr_auc": round(float(average_precision_score(y, p)), 3),
                       "roc_auc": round(float(roc_auc_score(y, p)), 3),
                       "base_rate": round(float(y.mean()), 3), "n": len(te), "positives": int(y.sum()),
-                      "top20_hits_12m": hits,
+                      "top20_unit": "drone(그 달 드론별 최근 기록)", "top20_hits_12m": hits,
+                      "top20_hits_12m_records": hits_rec,
                       "cost_at_val_threshold": {str(k): {kk: (float(vv) if kk == "threshold" else int(vv)) for kk, vv in v.items()}
                                                 for k, v in costs.items()}},
         "validation_ref": card["validation"],
@@ -100,8 +99,10 @@ def main():
            L.md_table(pd.DataFrame([
                {"구분": "검증 2024-07~12 (model_card)", "PR-AUC": v["pr_auc"], "기준선(재고장 비율)": v["base_rate"], "ROC-AUC": v["roc_auc"], "건수": v["n"]},
                {"구분": "시험 2025 (재현 정답)", "PR-AUC": t["pr_auc"], "기준선(재고장 비율)": t["base_rate"], "ROC-AUC": t["roc_auc"], "건수": t["n"]}])), "",
-           "### 월 20대 적중 수 (2025, 12개월)", "", L.md_table(top, "{:,.1f}"), "",
-           f"- 합계: 모델 **{hits['model']:.0f}** · 오래된 순 {hits['oldest']:.0f} · 무작위(기대값) {hits['random']:.1f}", "",
+           "### 월 20대 적중 수 (2025, 12개월, 드론 단위 = 그 달 드론별 최근 기록)", "", L.md_table(top, "{:,.1f}"), "",
+           f"- 합계: 모델 **{hits['model']:.0f}** · 오래된 순 {hits['oldest']:.0f} · 무작위(기대값) {hits['random']:.1f} "
+           f"/ 재고장 드론 {hits['failures']:.0f}대 중 모델이 잡은 비율 {hits['model'] / max(hits['failures'], 1) * 100:.0f}%",
+           f"- 참고(기록 단위, 같은 드론 중복 선택 포함): 모델 {hits_rec['model']:.0f} · 오래된 순 {hits_rec['oldest']:.0f} · 무작위 {hits_rec['random']:.1f}", "",
            "### 검증 기간에서 고른 기준을 2025에 그대로 쓰면", "",
            L.md_table(pd.DataFrame([{"놓친 재고장 비용(만원)": k, **vv} for k, vv in t["cost_at_val_threshold"].items()])), "",
            f"- {res['note']}", ""]
@@ -111,7 +112,8 @@ def main():
         print(("통과 " if ok else "실패 ") + k)
     print(f"재현 규칙 train 일치율 {match * 100:.2f}%")
     print(f"2025 PR-AUC {t['pr_auc']} (기준선 {t['base_rate']}) · ROC-AUC {t['roc_auc']} · 재고장 {t['positives']}/{t['n']}")
-    print(f"2025 월 20대 적중 합: 모델 {hits['model']:.0f} · 오래된 순 {hits['oldest']:.0f} · 무작위 {hits['random']:.1f}")
+    print(f"2025 월 20대 적중 합(드론 단위): 모델 {hits['model']:.0f} · 오래된 순 {hits['oldest']:.0f} · 무작위 {hits['random']:.1f}"
+          f" · 재고장 드론 {hits['failures']:.0f}  (참고 기록 단위: 모델 {hits_rec['model']:.0f})")
     print("저장: artifacts/evaluation.json · reports/evaluation.md")
 
 
