@@ -42,7 +42,8 @@ def main() -> None:
     if meta_fp and meta_fp != fp:
         raise SystemExit(f"지문 불일치: score 파일 {fp} ≠ plan_meta {meta_fp}. drone-plan을 다시 실행한다.")
 
-    df = pd.read_csv(SCORE, encoding="utf-8-sig")
+    # 'N/A'(예방정비 · 고장 없음)를 결측으로 바꾸지 않도록 빈칸만 결측으로 읽는다
+    df = pd.read_csv(SCORE, encoding="utf-8-sig", keep_default_na=False, na_values=[""])
     df["maintenance_date"] = pd.to_datetime(df["maintenance_date"]).dt.date
     df["score_fp"] = fp
 
